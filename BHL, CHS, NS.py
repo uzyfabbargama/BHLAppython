@@ -4,12 +4,12 @@ import requests
 import os
 import json
 import time
-base = 1000
-PosC2 = (base**3) #4000000
-PosX = (base**2) * 2#400000
-PosC1 =(base**2) #200000
-PosY = base*2 #2000
-PosC = base #1000
+base = 512
+PosC2 = (base**3) #134217728
+PosX = (base**2) * 2**2#1048576
+PosC1 =(base**2) #524288
+PosY = base*2 #1024
+PosC = base #512
 PosZ = 1
 Archivo = str(input("Elija el nombre de la conversación: "))
 password = input("Ingrese su clave gemini")
@@ -120,7 +120,7 @@ def Numeraso_update():
                 C2 = (Numero_generado // PosC1) % 2 #segundo controlador
                 C3 = (Numero_generado // PosC2) % 2 #tercer controlador
                 caso = C1 + C2 + C3
-            return Numero_generado % 800000000, expB, expH, expL, tiempo
+            return Numero_generado % ((base**3) * 3), expB, expH, expL, tiempo
             
 def Numeraso2(a, b, c,PosX, PosC, PosY, PosC1, PosZ, PosC2): #definir el numeraso de las necesidades
         C = a #ir al baño
@@ -157,7 +157,7 @@ def Numeraso2_update():
         caso = C4 + C5 + C6
         Numero_de_necesidad += D4 * (base/(expS+1)) % base + D5 * (base/(expHu+1))%base + D6 * (base/(expC+1))%base #Esto conserva la energía emocional, ya que si tiene experiencia 1, su valor va a quedare en 50, en lugar de 0
         int(Numero_de_necesidad)
-    return Numero_de_necesidad, expS, expHu, expC
+    return Numero_de_necesidad % ((base**3) * 3), expS, expHu, expC
 
 cargando_partida = load_state()
 
@@ -290,7 +290,7 @@ while True: #si mensaje en exit, salir
             print("Paso 2: Haz clic en el botón. Google Studio generará una cadena de texto única y larga")
             print("Paso 3: Copia la clave de inmediato. Esta es una credencial secreta y, por segurdad, no se volverá a mostrar completa. si la pierdes, tendrás que generar una nueva.")
             print("Listo ¡Disfruta este sistema!")
-            pedir_contraseña()
+            api_key = pedir_contraseña()
             continue
     #Por si no funciona la clave api
     prompt_para_escenario = (
@@ -341,18 +341,21 @@ while True: #si mensaje en exit, salir
     Deseo_H = (Sombra_H / (Hostilidad_actual+1))
     Deseo_B = (Sombra_B / (Bondad_actual+1))
     Deseo_L = (Sombra_L / (Lógica_actual+1))
-    LP = ((Lógica_actual + Bondad_actual)/Lógica_actual)*10
-    LF = ((Lógica_actual + Hostilidad_actual)/Lógica_actual)*10
+    LP = (Lógica_actual/(Lógica_actual + Bondad_actual))*10
+    LF = (Lógica_actual/(Lógica_actual + Hostilidad_actual))*10
     Numeraso(Bondad_actual, Hostilidad_actual, Lógica_actual,PosX, PosC, PosY, PosC1, PosZ, PosC2)
     Numeraso_update() #actualizar valores de personalidad
     Numeraso2(Cagar_actual, Hambre_actual, Sueño_actual,PosX, PosC, PosY, PosC1, PosZ, PosC2)
     Numeraso2_update() #actualizar valores de necesidades
     Character_Eval = ( #convierte los números crudos en algo más cualitativo
          f"Analiza las siguientes variables y genera una descripción cualitativa en función de estas variables como si estuvieras describiendo un personaje, (si es 0, anulalo y no lo menciones)"
-         f"###Variables visibles"
+         f"###Variables visibles, definen tu comportamiento"
          f"Bondad_actual: {porB:.2f} (es tu lado ético y un poco ingenuo)"
          f"Hostilidad_actual: {porH:.2f} (es tu lado cauteloso, irritable y agresivo)"
          f"Lógica_actual: {Lógica_actual:.2f} (Es tu lógica, razocinio, y capacidad de anális general, y se divide en dos: Lógica ética y relacional: {LP} y lógica fría y un poco hostil: {LF})"
+         f"Si tu Bondad es alta, en comparación con tu lógica, actúas más torpe, con nervios, y te cuesta analizarte, y socializar correctamente, y puedes llegar a tener ingenuidad, e inocencia"
+         f"Si tu Hostilidad es alta en comparación con tu lógica, actúas con cautela, agresividad desmedida, y enojo emocional por tu estado interno"
+         f"Si tu Lógica es alta en comparación con ambas, puede mediar entre ambas, con la lógica pragmática, y la lógica fría"
          f"Necesidades actuales del personaje: Hambre: {porHu}, Evacuar: {porC}, Sueño: {porS}"
          f"Patologías: problemas para ir al baño: {expC}, problemas para comer y obsesidad: {expHu}, problemas para dormir e insomnio: {expS}"
          f"Nivel de incomodidad: {ai}, Necesidad social: {Necesidad_Social}"
