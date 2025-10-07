@@ -9,10 +9,18 @@ pip install requests
 Eso es todo.
 # 2 -Segundo, variables de input:
 • Clave api: vaya a https://aistudio.google.com/app/apikey y obtenga su clave gratuita para poder disfrutar del sistema
-• Archivo: Defina el nombre del archivo .json (sin colocar .json, ejemplo, marta ✓, pero marta.json X)
+
+• Archivo: Defina el nombre del archivo.json (sin colocar .json, ejemplo, marta ✓, pero marta.json X)
+
 • Escenario: Defina el escenario incial
+
 • Peculiaridades: Defina la personalidad, familia, intereses, y todo lo cualitativo del personaje
+
 • Bondad: ¿qué tan amable es del 1 al 999?
+
 • Hostilidad: ¿qué tan cauteloso, y sarcástico es del 1 al 999?
+
 • Lógica: ¿qué tan analítico es del 1 al 999?
+
 • Mensaje: Aquí escribes tu mensaje.
+
