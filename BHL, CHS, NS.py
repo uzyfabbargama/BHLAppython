@@ -1,9 +1,6 @@
-import math
-import random
 import requests
 import os
 import json
-import time
 base = 512
 PosC2 = (base**3) #134217728
 PosX = (base**2) * 2**2#1048576
