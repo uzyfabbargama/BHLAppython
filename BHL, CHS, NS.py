@@ -1,6 +1,9 @@
+import math
+import random
 import requests
 import os
 import json
+import time
 base = 512
 PosC2 = (base**3) #134217728
 PosX = (base**2) * 2**2#1048576
@@ -106,10 +109,10 @@ def Numeraso_update():
                 expL += D3
                 tiempo += D1*0.000238923 + D2*2.2781388 + D3*1.7238498
                 Numero_generado += D1 * PosC + D2 * PosC1 + D3 * PosC2 #para reestablecer el valor sólo si D es 1, (osea, cuando el controlador es 0) directamente en el número
-                Numero_generado += D1 #activa ciclo, sumando 1 a lógica
-                Numero_generado -= (D1)*PosY #le resta 1 a hostilidad
-                Numero_generado -= D2*PosZ #le resta uno a lógica
-                Numero_generado -= (D3)*PosX #le resta 1 a bondad
+                Numero_generado += D1*expB #activa ciclo, sumando 1 a lógica por factor de bondad
+                Numero_generado -= (D1*expB)*PosY #le resta 1 a hostilidad por factor de bondad
+                Numero_generado -= D2*expH*PosZ #le resta uno a lógica por factor de hostilidad
+                Numero_generado -= (D3*expL)*PosX #le resta 1 a bondad por factor de lógica
                 Numero_generado += D1 * (base/(expL+1))%base + D2 * (base/(expH+1))%base + D3 * (base/(expB+1))%base #Esto conserva la energía emocional, ya que si tiene experiencia 1, su valor va a quedare en 50, en lugar de 0
                 #las sumas, se hacen automáticamente con el acarreo, 
                 #PD: los D1, D2, D3, sólo restan o suman 1, si los controladores están activos
