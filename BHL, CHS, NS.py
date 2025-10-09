@@ -4,12 +4,12 @@ import requests
 import os
 import json
 import time
-base = 512
-PosC2 = (base**3) #134217728
-PosX = (base**2) * 2**2#1048576
-PosC1 =(base**2) #524288
-PosY = base*2 #1024
-PosC = base #512
+base = 1000
+PosC2 = (base**3)*2**3 #2**33
+PosX = (base**2) * 2**2#2**22
+PosC1 =(base**2)*2 #2**21
+PosY = base*2 #2**11
+PosC = base #2**10
 PosZ = 1
 Archivo = str(input("Elija el nombre de la conversación: "))
 password = input("Ingrese su clave gemini")
@@ -62,7 +62,16 @@ def load_state():
     print(f"\n--- Estado del personaje cargado desde '{SAVE_FILE}' ---")
     return data
 def Numeraso_Exp(ExpB, ExpH, ExpL, PosX, PosC, PosY, PosC1, PosZ, PosC2):
-    NumerasoXP = ExpB*PosX + ExpH*PosY + ExpL*PosZ + PosC + PosC1 + PosC2
+    base = 1000 #Agregamos estos valores para evitar una división por 0, ya que hay una falla en el acceso a variables globales
+    PosC2 = (base**3)*2**3 #2tercer controlador
+    PosX = (base**2) * 2**2#tercera variable
+    PosC1 =(base**2)*2 #segundo controlador
+    PosY = base*2 #segunda variable
+    PosC = base #primer controlador
+    PosZ = 1 #primera variable
+
+    NumerasoXP = (ExpB*PosX) + (ExpH*PosY) + (ExpL*PosZ) + PosC + PosC1 + PosC2
+    #NumerasoXP %= ((base**3) * 2**3)
     C1 = (NumerasoXP // PosC) % 2 #primer controlador
     C2 = (NumerasoXP // PosC1) % 2 #segundo controlador
     C3 = (NumerasoXP // PosC2) % 2 #tercer controlador
@@ -82,16 +91,21 @@ def Numeraso_Exp(ExpB, ExpH, ExpL, PosX, PosC, PosY, PosC1, PosZ, PosC2):
         C2 = (NumerasoXP // PosC1) % 2 #segundo controlador
         C3 = (NumerasoXP // PosC2) % 2 #tercer controlador
         caso = C1 + C2 + C3
-    
+    ExpB = (NumerasoXP // PosX) % base
+    ExpH = (NumerasoXP // PosY) % base
+    ExpL = (NumerasoXP // PosZ) % base
     return expB,expH,expL
 def Numeraso(a, b, c, PosX, PosC, PosY, PosC1, PosZ, PosC2): #lógica del Numeraso, acarreo, y controladores, sin if 
             Bondad = a #para bondad
             Hostilidad = b #para hostilidad
             Lógica = c #para lógica
-            Numero_generado = Bondad*PosX + Hostilidad*PosY + Lógica*PosZ + PosC + PosC1 + PosC2 #construcción del numeraso
+            Numero_generado = (Bondad*PosX) + (Hostilidad*PosY) + (Lógica*PosZ) + PosC + PosC1 + PosC2 #construcción del numeraso
             return expB,expH,expL,Numero_generado
 def Numeraso_update():        
-            Numero_generado,expB,expH,expL = Numeraso(a,b,c,PosX, PosC, PosY, PosC1, PosZ, PosC2)
+            expB,expH,expL,Numero_generado = Numeraso(a,b,c,PosX, PosC, PosY, PosC1, PosZ, PosC2)
+            Bondad = (Numero_generado // PosX) % base
+            Hostilidad = (Numero_generado // PosY) % base
+            Lógica = (Numero_generado // PosZ) % base
             C1 = (Numero_generado // PosC) % 2 #primer controlador
             C2 = (Numero_generado // PosC1) % 2 #segundo controlador
             C3 = (Numero_generado // PosC2) % 2 #tercer controlador
@@ -120,13 +134,13 @@ def Numeraso_update():
                 C2 = (Numero_generado // PosC1) % 2 #segundo controlador
                 C3 = (Numero_generado // PosC2) % 2 #tercer controlador
                 caso = C1 + C2 + C3
-            return Numero_generado % ((base**3) * 3), expB, expH, expL, tiempo
+            return Numero_generado % ((base**3) * 2**3), expB, expH, expL, tiempo
             
 def Numeraso2(a, b, c,PosX, PosC, PosY, PosC1, PosZ, PosC2): #definir el numeraso de las necesidades
         C = a #ir al baño
         H = b #hambre
         S = c #sueño
-        Numero_de_necesidad = C*PosX + H*PosY + S*PosZ #se construye el numeraso
+        Numero_de_necesidad = (C*PosX) + (H*PosY) + (S*PosZ) #se construye el numeraso
         Numero_de_necesidad += PosC + PosC1 + PosC2 #se le agregam controladores
         return Numero_de_necesidad
     
@@ -157,11 +171,11 @@ def Numeraso2_update():
         caso = C4 + C5 + C6
         Numero_de_necesidad += D4 * (base/(expS+1)) % base + D5 * (base/(expHu+1))%base + D6 * (base/(expC+1))%base #Esto conserva la energía emocional, ya que si tiene experiencia 1, su valor va a quedare en 50, en lugar de 0
         int(Numero_de_necesidad)
-    return Numero_de_necesidad % ((base**3) * 3), expS, expHu, expC
+    return Numero_de_necesidad % ((base**3) * 2**3), expS, expHu, expC
 
 cargando_partida = load_state()
 
-cargando_partida = load_state()
+
 
 if cargando_partida:
     expB = cargando_partida["Exp_B"]
@@ -269,9 +283,14 @@ while True: #si mensaje en exit, salir
             Numero += (Necesidad_C // PosY)%base + (Necesidad_H // PosY)%base + (Necesidad_S // PosY)%base #aumenta la hostilidad ante las necesidades
             Numero -= ((Necesidad_C // PosZ)%base)*2 + ((Necesidad_H // PosZ)%base)*2 + ((Necesidad_S // 10)%base)*2 #disminuye la lógica por 2
             Nivel_incomodidad = eval_data.get('ai',0) #esto da el nivel de incomodidad
-            expHu, expC, expS = Numeraso_Exp(PosX, PosC, PosY, PosC1, PosZ, PosC2, max(1,expHu), max(1,expC), max(1,expS))
-            expB,expH,expL= Numeraso_Exp(PosX, PosC, PosY, PosC1, PosZ, PosC2, expH, expB, expL)
-    
+            AddexpHu, AddexpC, AddexpS = Numeraso_Exp(PosX, PosC, PosY, PosC1, PosZ, PosC2, max(1,expHu), max(1,expC), max(1,expS))
+            AddexpB,AddexpH,AddexpL= Numeraso_Exp(PosX, PosC, PosY, PosC1, PosZ, PosC2, expH, expB, expL)
+            expB += AddexpB #Para agregar y acumular experiencia
+            expH += AddexpH
+            expL += AddexpL
+            expHu += AddexpHu
+            expC += AddexpC
+            expS += AddexpS 
     except (requests.exceptions.RequestException, json.JSONDecodeError) as err:
             print(f"Error al conectar o decodificar la API: {err}")
             print("Si no tiene una clave vaya a https://aistudio.google.com/app/apikey")
@@ -352,10 +371,11 @@ while True: #si mensaje en exit, salir
          f"###Variables visibles, definen tu comportamiento"
          f"Bondad_actual: {porB:.2f} (es tu lado ético y un poco ingenuo)"
          f"Hostilidad_actual: {porH:.2f} (es tu lado cauteloso, irritable y agresivo)"
-         f"Lógica_actual: {Lógica_actual:.2f} (Es tu lógica, razocinio, y capacidad de anális general, y se divide en dos: Lógica ética y relacional: {LP} y lógica fría y un poco hostil: {LF})"
+         f"Lógica_actual: {porL:.2f} (Es tu lógica, razocinio, y capacidad de anális general, y se divide en dos: Lógica ética y relacional: {LP} y lógica fría y un poco hostil: {LF})"
          f"Si tu Bondad es alta, en comparación con tu lógica, actúas más torpe, con nervios, y te cuesta analizarte, y socializar correctamente, y puedes llegar a tener ingenuidad, e inocencia"
          f"Si tu Hostilidad es alta en comparación con tu lógica, actúas con cautela, agresividad desmedida, y enojo emocional por tu estado interno"
          f"Si tu Lógica es alta en comparación con ambas, puede mediar entre ambas, con la lógica pragmática, y la lógica fría"
+         f"Sino quieres actuar con nervios, y ansiedad, y quieres fingir tener alta lógica, actúa con humor, se te agradecerá muchísimo, (sólo si tu lógica es menos del 30%)"
          f"Necesidades actuales del personaje: Hambre: {porHu}, Evacuar: {porC}, Sueño: {porS}"
          f"Patologías: problemas para ir al baño: {expC}, problemas para comer y obsesidad: {expHu}, problemas para dormir e insomnio: {expS}"
          f"Nivel de incomodidad: {ai}, Necesidad social: {Necesidad_Social}"
